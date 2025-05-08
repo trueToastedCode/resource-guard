@@ -207,6 +207,67 @@ namespace scopedlocalref {
         }
 
         /**
+         * @brief Sets or replaces the first resource
+         * 
+         * @param new_resource The new resource to manage
+         * @throws std::logic_error if resources have been released
+         * @throws std::invalid_argument if type doesn't match
+         */
+        void set(const std::tuple_element_t<0, decltype(m_resources)>& new_resource) {
+            if (m_released) throw std::logic_error("Resource released");
+            std::get<0>(m_resources) = new_resource;
+        }
+
+        /**
+         * @brief Sets or replaces a specific resource by index
+         * 
+         * @tparam I The index of the resource to set
+         * @param new_resource The new resource to manage
+         * @throws std::logic_error if resources have been released
+         * @throws std::invalid_argument if type doesn't match
+         */
+        template <size_t I>
+        void set(const std::tuple_element_t<I, decltype(m_resources)>& new_resource) {
+            if (m_released) throw std::logic_error("Resource released");
+            static_assert(I < sizeof...(Resources), "Invalid resource index");
+            std::get<I>(m_resources) = new_resource;
+        }
+
+        /**
+         * @brief Tries to set or replace the first resource
+         * 
+         * This method attempts to set the first resource to the new resource provided.
+         * It returns 0 if the resource was successfully set, and 1 if the resources have been released.
+         * 
+         * @param new_resource The new resource to manage
+         * @return 0 if the resource was set successfully, 1 if resources have been released
+         */
+        int try_set(const std::tuple_element_t<0, decltype(m_resources)>& new_resource) {
+            if (m_released) return 1;
+            std::get<0>(m_resources) = new_resource;
+            return 0;
+        }
+
+        /**
+         * @brief Tries to set or replace a specific resource by index
+         * 
+         * This method attempts to set a specific resource at index `I` to the new resource provided.
+         * It returns 0 if the resource was successfully set, and 1 if the resources have been released.
+         * 
+         * @tparam I The index of the resource to set
+         * @param new_resource The new resource to manage
+         * @return 0 if the resource was set successfully, 1 if resources have been released
+         * @throws std::invalid_argument if index `I` is out of bounds
+         */
+        template <size_t I>
+        int try_set(const std::tuple_element_t<I, decltype(m_resources)>& new_resource) {
+            if (m_released) return 1;
+            static_assert(I < sizeof...(Resources), "Invalid resource index");
+            std::get<I>(m_resources) = new_resource;
+            return 0;
+        }
+
+        /**
          * @brief Checks if all resources are valid and have not been released
          * 
          * Uses the ValidityCheck trait for each resource type to determine validity
