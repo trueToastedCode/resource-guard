@@ -188,9 +188,9 @@ namespace scopedlocalref {
          * 
          * @return An optional containing the resource if available, nullopt otherwise
          */
-        std::optional<std::remove_reference_t<decltype(std::get<0>(m_resources))>> try_get() const {
+        std::optional<std::reference_wrapper<const std::tuple_element_t<0, decltype(m_resources)>>> try_get() const {
             if (m_released) return std::nullopt;
-            return std::get<0>(m_resources);
+            return std::cref(std::get<0>(m_resources));
         }
 
         /**
@@ -200,10 +200,10 @@ namespace scopedlocalref {
          * @return An optional containing the resource if available, nullopt otherwise
          */
         template <size_t I>
-        std::optional<std::remove_reference_t<decltype(std::get<I>(m_resources))>> try_get() const {
-            static_assert(I < sizeof...(Resources), "Invalid resource index");
+        std::optional<std::reference_wrapper<const std::tuple_element_t<I, decltype(m_resources)>>> try_get() const {
             if (m_released) return std::nullopt;
-            return std::get<I>(m_resources);
+            static_assert(I < sizeof...(Resources), "Invalid resource index");
+            return std::cref(std::get<I>(m_resources));
         }
 
         /**
